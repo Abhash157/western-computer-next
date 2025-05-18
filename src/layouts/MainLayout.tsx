@@ -5,7 +5,7 @@ import { MoonIcon, SunIcon, HamburgerIcon, CloseIcon } from '@chakra-ui/icons';
 import Link from 'next/link'; // Changed from react-router-dom
 import { usePathname } from 'next/navigation'; // Changed from react-router-dom
 import { motion } from 'framer-motion'; // useScroll and useTransform are not directly used here, can be removed if not needed for other elements
-import { useEffect, useState, useRef } from 'react'; // Added useRef
+import { useEffect, useState } from 'react';
 
 const MotionBox = motion(Box);
 
@@ -24,8 +24,6 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
   const [isNavVisible, setIsNavVisible] = useState(true);
   const [prevScrollPos, setPrevScrollPos] = useState(0);
   const pathname = usePathname(); // Next.js hook
-  const navContainerRef = useRef<HTMLDivElement>(null); // Ref for the entire nav container including mobile
-  const [navHeight, setNavHeight] = useState(64); // Default nav height
 
   useEffect(() => {
     const handleScroll = () => {
@@ -41,15 +39,9 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [prevScrollPos]);
 
-  useEffect(() => {
-    if (navContainerRef.current) {
-      setNavHeight(navContainerRef.current.offsetHeight);
-    }
-  }, [isOpen, colorMode]); // Recalculate on isOpen change (mobile nav) or other changes that might affect height
-
   // Mobile navigation drawer (if isOpen)
   const MobileNav = () => (
-    <Box pb={4} display={{ md: 'none' }} w="100%">
+    <Box pb={4} display={{ md: 'none' }}>
       <Stack as={'nav'} spacing={4}>
         {navItems.map((item) => (
           <Button
@@ -75,7 +67,6 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <Box minH="100vh" w="100vw" overflowX="hidden">
       <MotionBox // Changed Box to MotionBox for animation
-        ref={navContainerRef} // Attach ref here
         as="nav"
         position="fixed"
         w="100%"
@@ -158,9 +149,8 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
         </Container>
       </MotionBox>
 
-      {/* The main content area no longer has padding-top. Pages manage their own spacing if needed. */}
-      {/* If isNavVisible is false, the nav is translated up, so navHeight effectively becomes 0 for margin */}
-      <Box as="main" w="100%" style={{ paddingTop: isNavVisible ? navHeight : 0, transition: 'padding-top 0.3s ease-in-out' }}>
+      {/* Add padding to main content to account for fixed navbar height */}
+      <Box as="main" w="100%" pt={{ base: isOpen ? '220px' : '64px', md: '64px' }} transition="padding-top 0.3s ease-in-out">
         {children}
       </Box>
 
